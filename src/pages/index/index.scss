@@ -1,0 +1,46 @@
+
+.todolist-warp{   
+    height: 100vh;
+    width: 100vw;
+    background: url("../assets/bg.jpg") no-repeat center center/cover;
+    .navbar-warp{
+        opacity: .8;
+    }
+    .title-warp{
+        margin: 10px 20px;
+    }
+    .list-warp{
+        margin: 0 20px;
+        .no-data-tips{
+            color: #858282;
+            text-align: center; 
+        }
+    }
+
+    //添加任务
+    .addTask-warp{
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1rem;
+    margin: 0px 20px;
+    padding: 0.2rem;
+    color: #fff;
+    border-radius: 0.5rem;
+    }
+    .popup-warp{
+        font-size: 30px;
+        .popup-isDone,
+        .popup-isImportant{
+            margin:20px;
+        }
+        .popup-btn-save{
+            margin: 40px;
+        }
+        .popup-isImportant,
+        .popup-isDone{
+            display: flex;
+        }
+    }
+}
