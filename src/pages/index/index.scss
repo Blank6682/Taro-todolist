@@ -7,10 +7,17 @@
         opacity: .8;
     }
     .title-warp{
-        margin: 10px 20px;
+        margin: 20px 30px;
+        .title-content{
+            font-size: 40px;
+            font-weight: bolder;
+        }
+        .title-time{
+            margin: 20px 0;
+        }
     }
     .list-warp{
-        margin: 0 20px;
+        margin: 0 30px;
         .no-data-tips{
             color: #858282;
             text-align: center; 

@@ -14,15 +14,18 @@
 
     <!-- 标题 -->
     <view class="title-warp">
-      <view> 我的一天 </view>
-      <view> 时间 </view>
+      <view class="title-content"> 我的一天 </view>
+      <view class="title-time"> 时间 </view>
     </view>
 
     <!-- 任务列表 -->
     <view class="list-warp">
-      <!--没有任务提醒  && !loading"-->
+      <!--没有任务提醒-->
       <view v-if="todoList.length <= 0" class="no-data-tips">
-        <AtIcon value="calendar" size="55" />
+        <view>
+          <AtIcon value="calendar" size="80" />
+        </view>
+
         <text>没有待办</text>
       </view>
       <!-- 列表 -->
@@ -47,7 +50,7 @@
     <!-- 底部添加任务 -->
     <view class="addTask-warp">
       <button @tap="handleIsShow">
-        <AtIcon value="add" size="30px" color="#c0c0c0" /> 添加任务
+        <AtIcon value="add" size="30" color="#c0c0c0" /> 添加任务
       </button>
     </view>
 
@@ -125,12 +128,7 @@ export default {
         isImportant: false,
         remark: ""
       }],
-      todoList: [{
-        name: "54512",
-        isDone: true,
-        isImportant: true,
-        remark: ""
-      }]
+      todoList: []
     }
   },
   methods: {
