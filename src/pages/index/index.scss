@@ -22,8 +22,35 @@
             color: #858282;
             text-align: center; 
         }
+        .task-list-item{
+            width: 100%;
+            background-color: #ffffff;
+            margin-top: 20px;
+            border-radius: 20px;
+            padding: 20px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            .task-list-item-schedule{
+                font-size: small;
+            }
+        }
     }
-
+    .popup-delete{
+        position: absolute;
+        width: 60vw;
+        height: 20vh;
+        margin: auto 20%;
+        background-color: #ffffff;
+        opacity: .9;
+        border-radius: 30px;
+        .popup-delete-title{
+            padding: 50px;
+        }
+        .popup-delete-btn{
+            display: flex;
+        }
+    }
     //添加任务
     .addTask-warp{
     display: flex;
