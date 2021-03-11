@@ -3,18 +3,12 @@
     <!-- 顶部导航 -->
 
     <view class="navbar-warp">
-      <AtNavBar
-        color="#000"
-        left-icon-type="close"
-        right-first-icon-type="user"
-      >
-        <view>ToDoList</view>
-      </AtNavBar>
+      <AtNavBar color="#000" left-icon-type="close" />
     </view>
 
     <!-- 标题 -->
     <view class="title-warp">
-      <view class="title-content"> 我的一天 </view>
+      <view class="title-content"> ToDo list </view>
       <view class="title-time">
         {{ getTimeData() }}
       </view>
@@ -31,52 +25,51 @@
         <text>没有待办</text>
       </view>
       <!-- 列表 -->
-      <view v-for="(item, index) in todoList" :key="index" class="task-list">
+      <view v-for="item in todoList" :key="item.id" class="task-list">
         <view class="task-list-item">
-          <!-- 完成任务选择 -->
-          <view :on-click="handleSeletChange">
-            <checkbox value="item.name" :checked="item.isDone" />
-          </view>
-
-          <view>
+          <!-- 左边任务 -->
+          <view class="task-list-item-left">
+            <checkbox
+              :value="item.isDone"
+              :checked="item.isDone"
+              :on-change="handleIsDone"
+            />
             <view
               class="task-list-item-name"
-              :style="{ textDecoration: item.isDone ? 'line-through' : 'none' }"
+              :style="{
+                textDecoration: item.isDone ? 'line-through' : 'none',
+              }"
             >
               {{ item.name }}
             </view>
-            <view
-              class="task-list-item-schedule"
-              :style="{ color: item.isDone ? '#c0c0c0' : '#000000' }"
-            >
-              {{ item.isDone ? "已完成" : "正在进行" }}
-            </view>
           </view>
+
           <!-- 右边图标 -->
-          <view class="task-list-item-icon">
+          <view class="task-list-right">
             <AtIcon
               :on-click="handleStarClick"
               :value="item.isImportant ? 'star-2' : 'star'"
               :style="{ color: item.isImportant ? 'red' : '#c0c0c0' }"
-              size="30"
+              size="20"
             />
-            <AtIcon value="trash" :on-click="handleIsDelete" size="30" />
+            <AtIcon value="trash" :on-click="handleIsDelete" size="20" />
+          </view>
+        </view>
+        <!-- 是否删除弹窗 -->
+        <view v-if="isDelete" class="popup-delete">
+          <view class="popup-delete-title"> 是否要删除该任务? </view>
+          <view class="popup-delete-btn">
+            <button @tap="handleIsDelete">取消</button>
+            <button type="primary" @tap="handleDelete(item.id)">确认</button>
           </view>
         </view>
       </view>
     </view>
-    <!-- 是否删除弹窗 -->
-    <view v-if="isDelete" class="popup-delete">
-      <view class="popup-delete-title"> 是否要删除该任务? </view>
-      <view class="popup-delete-btn">
-        <button typr="warn" @tap="handleIsDelete">取消</button>
-        <button type="primary" @tap="handleDelete">确认</button>
-      </view>
-    </view>
+
     <!-- 底部添加任务 -->
     <view class="addTask-warp">
       <button @tap="handleIsShow">
-        <AtIcon value="add" size="30" color="#c0c0c0" /> 添加任务
+        <AtIcon value="add" size="20" color="#c0c0c0" /> 添加任务
       </button>
     </view>
 
@@ -90,36 +83,51 @@
       >
         <AtForm>
           <AtInput
-            :value="value"
-            name="name"
+            name="addTaskForm.name"
             title="待办事项"
             type="text"
             placeholder="请输入待办事项"
-            :on-change="handleChange"
+            :value="addTaskForm.name"
+            :on-change="handleInputName"
           />
           <AtInput
-            name="remark"
+            name="addTaskForm.remark"
             title="备注"
             type="text"
             placeholder="请输入备注"
-            value="addTaskForm.remark"
+            :value="addTaskForm.remark"
+            :on-change="handleInputRemark"
           />
           <view class="popup-isDone">
             <text>已完成：</text>
-            <radio-group v-model="addTaskForm.isDone" class="isDone">
-              <radio :value="true" :name="true"> 是 </radio>
-              <radio :value="false" :name="false"> 否 </radio>
+            <radio-group @change="handleAddIsDone">
+              <radio :value="true" :checked="addTaskForm.isDone"> 是 </radio>
+              <radio :value="false" :checked="!addTaskForm.isDone"> 否 </radio>
             </radio-group>
           </view>
           <view class="popup-isImportant">
             <text>重要事项：</text>
-            <radio-group v-model="addTaskForm.isImprotant" class="isImprotant">
-              <radio :value="true"> 是 </radio>
-              <radio :value="false"> 否 </radio>
+            <radio-group @change="handleAddIsImportant">
+              <radio :value="true" :checked="addTaskForm.isImportant">
+                是
+              </radio>
+              <radio :value="false" :checked="!addTaskForm.isImportant">
+                否
+              </radio>
             </radio-group>
           </view>
           <view class="popup-btn-save">
-            <button type="primary" @tap="handleIsShow">保存</button>
+            <button
+              type="primary"
+              form-type="subimt"
+              :disabled="!addTaskForm.name"
+              @tap="
+                handleIsShow();
+                handleAddTask();
+              "
+            >
+              保存
+            </button>
           </view>
         </AtForm>
       </AtFloatLayout>
@@ -157,12 +165,13 @@ export default {
       isDone: false,
       isDelete: false,
       isShow: false,
-      addTaskForm: [{
-        name: "1",
+      deleteTaskId: "",
+      addTaskForm: {
+        name: "",
         isDone: false,
         isImportant: false,
-        remark: "3"
-      }],
+        remark: ""
+      },
       todoList: []
     }
   },
@@ -178,25 +187,48 @@ export default {
     getTasks () {
       getTaskList().then((res) => {
         this.todoList = res.data;
-        console.log(this.todoList);
+        // console.log(this.todoList);
       })
     },
+    // 清空输入对象
+    clearAddTaskForm () {
+      this.addTaskForm = {
+        name: "",
+        isDone: false,
+        isImportant: false,
+        remark: ""
+      }
+    },
     //处理Input框的输入事件
-    handleChange () {
-      return value;
+    handleInputName (name) {
+      this.addTaskForm.name = name;
+
+    },
+    handleInputRemark (remark) {
+      this.addTaskForm.remark = remark;
+    },
+    handleAddIsDone (isDone) {
+      this.addTaskForm.isDone = Boolean(isDone.detail.value);
+
+    },
+    handleAddIsImportant (isImportant) {
+      this.addTaskForm.isImportant = Boolean(isImportant.detail.value);
     },
 
     //处理添加任务
     handleAddTask () {
-      addTask(this.addTaskForm).then((res) => {
-        if (res) {
-          this.isShow = false;
-          this.getTasks();
-          //   Taro.atMessage({ type: "succcess", message: "修改成功", duration: 1000 });
-        }
-      }).catch(() => {
-        // Taro.atMessage({ type: "danger", message: "修改失败", duration: 1000 });
-      })
+      console.log(this.addTaskForm)
+
+      addTask(this.addTaskForm)
+        .then((res) => {
+          if (res) {
+            this.isShow = false;
+            this.getTasks();
+            // Taro.atMessage({ type: "succcess", message: "修改成功", duration: 1000 });
+          }
+        }).catch(() => {
+          // Taro.atMessage({ type: "danger", message: "修改失败", duration: 1000 });
+        })
     },
 
     // 处理删除事项
@@ -207,15 +239,20 @@ export default {
       deleteTask(id).then((res => {
         if (res) {
           this.getTasks();
+          this.isDelete = !this.isDelete;
         }
-      })).catch(() => { });
+      })).catch(() => { console.log("请求失败") });
     },
 
     //处理保存更新
     handleUpdateTask () {
-      updateTask(this.addTaskForm).then((res) => {
+
+      updateTask(this.addTaskForm).then(() => {
         this.isShow = false;
+        // console.log(this.addTaskForm);
+        //更新显示列表
         this.getTasks();
+        this.clearAddTaskForm();
       });
     },
 

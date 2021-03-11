@@ -4,43 +4,57 @@
     width: 100vw;
     background: url("../assets/bg.jpg") no-repeat center center/cover;
     .navbar-warp{
-        opacity: .8;
+        opacity: .7;
     }
     .title-warp{
         margin: 20px 30px;
+        padding: 0 60px 30px ;
+        border-bottom: 1px solid #a08787 ;
         .title-content{
-            font-size: 40px;
+            font-size: 60px;
             font-weight: bolder;
         }
         .title-time{
-            margin: 20px 0;
+            margin: 10px 0;
         }
     }
     .list-warp{
+        padding-top: 1rem;
         margin: 0 30px;
         .no-data-tips{
-            color: #858282;
-            text-align: center; 
+            color: #414141;
+            text-align: center;
+            font-size: 40px; 
+            opacity: .6;
         }
         .task-list-item{
             width: 100%;
-            background-color: #ffffff;
-            margin-top: 20px;
+            opacity: 0.8;
+            background-image: linear-gradient(90deg,#FFEFBA,#FFFFFF);
+            margin-top: 15px;
             border-radius: 20px;
-            padding: 20px 20px;
+            padding: 30px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            .task-list-item-schedule{
-                font-size: small;
-            }
+            .task-list-item-left{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                .task-list-item-name{
+                    padding-left:20px;
+                    position: relative; 
+               }
+            } 
         }
-    }
+
+    //是否删除弹窗
     .popup-delete{
         position: absolute;
         width: 60vw;
         height: 20vh;
-        margin: auto 20%;
+        top: 40%;
+        left: 20%;
         background-color: #ffffff;
         opacity: .9;
         border-radius: 30px;
@@ -51,6 +65,7 @@
             display: flex;
         }
     }
+    }
     //添加任务
     .addTask-warp{
     display: flex;
@@ -58,13 +73,16 @@
     left: 0;
     right: 0;
     bottom: 1rem;
-    margin: 0px 20px;
-    padding: 0.2rem;
-    color: #fff;
-    border-radius: 0.5rem;
+    padding-bottom: 0.2rem;
+    button{ 
+        border-radius: 2rem;
+        background-image:linear-gradient(90deg,#FBD786,#e9e5ce);
+        box-shadow:10px 10px 10px #a5a291;
     }
+}
+
+    // 底部弹窗
     .popup-warp{
-        font-size: 30px;
         .popup-isDone,
         .popup-isImportant{
             margin:20px;
