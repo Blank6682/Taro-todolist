@@ -14,7 +14,7 @@
       </view>
     </view>
 
-    <!-- 任务列表 -->
+    <!-- 列表 -->
     <view class="list-warp">
       <!--没有任务提醒-->
       <view v-if="todoList.length <= 0" class="no-data-tips">
@@ -24,35 +24,37 @@
 
         <text>没有待办</text>
       </view>
-      <!-- 列表 -->
+
+      <!-- 任务列表 -->
+
       <view v-for="item in todoList" :key="item.id" class="task-list">
-        <view class="task-list-item">
+        <view class="task-item">
           <!-- 左边任务 -->
-          <view class="task-list-item-left">
-            <checkbox
-              :value="item.isDone"
-              :checked="item.isDone"
-              :on-change="handleIsDone"
-            />
+          <view class="task-item-left">
+            <view @tap="handleSeletChange(item)">
+              <checkbox :value="item.isDone" :checked="item.isDone" />
+            </view>
             <view
-              class="task-list-item-name"
-              :style="{
-                textDecoration: item.isDone ? 'line-through' : 'none',
-              }"
+              :class="item.isDone ? 'task-item-done-name' : 'task-item-name'"
+              @tap="handleIsEdit(item)"
             >
               {{ item.name }}
             </view>
           </view>
 
           <!-- 右边图标 -->
-          <view class="task-list-right">
-            <AtIcon
-              :on-click="handleStarClick"
-              :value="item.isImportant ? 'star-2' : 'star'"
-              :style="{ color: item.isImportant ? 'red' : '#c0c0c0' }"
-              size="20"
-            />
-            <AtIcon value="trash" :on-click="handleIsDelete" size="20" />
+          <view class="task-item-right">
+            <view :disabled="!item.isDone" @tap="handleStarClick(item)">
+              <AtIcon
+                :value="item.isImportant ? 'star-2' : 'star'"
+                :style="{
+                  color: item.isImportant ? 'red' : '#c0c0c0',
+                }"
+                size="20"
+              />
+            </view>
+
+            <AtIcon value="trash" size="20" :on-click="handleIsDelete" />
           </view>
         </view>
         <!-- 是否删除弹窗 -->
@@ -73,12 +75,12 @@
       </button>
     </view>
 
-    <!-- 底部增删弹窗 -->
+    <!-- 底部添加任务弹窗 -->
     <view class="popup-warp">
       <AtFloatLayout
-        v-if="isShow"
+        v-if="show"
         is-opened
-        title="编辑"
+        :title="isAdd ? '添加' : '编辑'"
         :on-close="handleIsShow"
       >
         <AtForm>
@@ -100,14 +102,14 @@
           />
           <view class="popup-isDone">
             <text>已完成：</text>
-            <radio-group @change="handleAddIsDone">
+            <radio-group @change="handleChooseIsDone">
               <radio :value="true" :checked="addTaskForm.isDone"> 是 </radio>
               <radio :value="false" :checked="!addTaskForm.isDone"> 否 </radio>
             </radio-group>
           </view>
           <view class="popup-isImportant">
             <text>重要事项：</text>
-            <radio-group @change="handleAddIsImportant">
+            <radio-group @change="handleChooseIsImportant">
               <radio :value="true" :checked="addTaskForm.isImportant">
                 是
               </radio>
@@ -121,10 +123,7 @@
               type="primary"
               form-type="subimt"
               :disabled="!addTaskForm.name"
-              @tap="
-                handleIsShow();
-                handleAddTask();
-              "
+              @tap="handleAddTask"
             >
               保存
             </button>
@@ -148,7 +147,6 @@ import "taro-ui-vue/dist/style/components/action-sheet.scss"
 import "taro-ui-vue/dist/style/components/input.scss"
 import "taro-ui-vue/dist/style/components/float-layout.scss"
 import "taro-ui-vue/dist/style/components/message.scss"
-import Taro from "@tarojs/taro"
 import dayjs from "dayjs"
 import './index.scss'
 
@@ -164,8 +162,8 @@ export default {
     return {
       isDone: false,
       isDelete: false,
-      isShow: false,
-      deleteTaskId: "",
+      show: false,
+      isAdd: true,
       addTaskForm: {
         name: "",
         isDone: false,
@@ -175,7 +173,7 @@ export default {
       todoList: []
     }
   },
-  mounted () {
+  onLoad () {
     this.getTasks()
   },
   methods: {
@@ -183,7 +181,7 @@ export default {
     getTimeData () {
       return dayjs(new Date()).format("YYYY/MM/DD");
     },
-    // //获取任务列表
+    //获取任务列表
     getTasks () {
       getTaskList().then((res) => {
         this.todoList = res.data;
@@ -199,7 +197,12 @@ export default {
         remark: ""
       }
     },
-    //处理Input框的输入事件
+    //处理底部弹窗事件
+    handleIsShow () {
+      this.show = !this.show;
+      this.clearAddTaskForm();
+    },
+    //处理交互事件
     handleInputName (name) {
       this.addTaskForm.name = name;
 
@@ -207,28 +210,36 @@ export default {
     handleInputRemark (remark) {
       this.addTaskForm.remark = remark;
     },
-    handleAddIsDone (isDone) {
+    handleChooseIsDone (isDone) {
       this.addTaskForm.isDone = Boolean(isDone.detail.value);
 
     },
-    handleAddIsImportant (isImportant) {
+    handleChooseIsImportant (isImportant) {
       this.addTaskForm.isImportant = Boolean(isImportant.detail.value);
     },
 
     //处理添加任务
     handleAddTask () {
-      console.log(this.addTaskForm)
+      if (this.isAdd) {
+        addTask(this.addTaskForm)
+          .then((res) => {
+            if (res) {
+              this.handleIsShow();
+              this.getTasks();
+            }
+          }).catch((err) => {
+            console.log(err)
+          })
+      } else {
+        this.handleUpdateTask();
+      }
+    },
 
-      addTask(this.addTaskForm)
-        .then((res) => {
-          if (res) {
-            this.isShow = false;
-            this.getTasks();
-            // Taro.atMessage({ type: "succcess", message: "修改成功", duration: 1000 });
-          }
-        }).catch(() => {
-          // Taro.atMessage({ type: "danger", message: "修改失败", duration: 1000 });
-        })
+    // 处理编辑
+    handleIsEdit (item) {
+      this.show = true;
+      this.isAdd = false;
+      this.addTaskForm = JSON.parse(JSON.stringify(item));
     },
 
     // 处理删除事项
@@ -241,24 +252,24 @@ export default {
           this.getTasks();
           this.isDelete = !this.isDelete;
         }
-      })).catch(() => { console.log("请求失败") });
+      })).catch((err) => { console.log(err); });
     },
 
     //处理保存更新
     handleUpdateTask () {
-
       updateTask(this.addTaskForm).then(() => {
-        this.isShow = false;
-        // console.log(this.addTaskForm);
+        this.isAdd = true;
+        this.show = false;
         //更新显示列表
         this.getTasks();
         this.clearAddTaskForm();
-      });
+      }).catch((err) => { console.log(err); });
     },
 
     // 处理完成选择
     handleSeletChange (item) {
       this.addTaskForm = item;
+      this.addTaskForm.isDone = !this.addTaskForm.isDone;
       this.handleUpdateTask();
     },
     //  处理是否为重要事项改变
@@ -267,21 +278,6 @@ export default {
       this.addTaskForm.isImportant = !this.addTaskForm.isImportant;
       this.handleUpdateTask();
     },
-
-    //处理底部弹窗事件
-    handleIsShow () {
-      this.isShow = !this.isShow;
-    },
-
-    handleIsDone () {
-      this.isDone = !this.isDone;
-      console.log(1);
-    },
-    handleIsImportant () {
-      this.isImportant = !this.isImportant;
-      Taro.atMessage({ message: "修改成功", type: "succcess", duration: 1000 });
-      console.log(1);
-    }
   }
 }
 

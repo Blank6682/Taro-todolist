@@ -12,7 +12,7 @@ export function getTaskList () {
 export function addTask (data) {
     return Request({
         url: "todo",
-        method: "post",
+        method: "POST",
         data
     });
 }
@@ -21,7 +21,7 @@ export function addTask (data) {
 export function deleteTask (id) {
     return Request({
         url: `todo/${id}`,
-        method: "delete"
+        method: "DELETE"
     })
 }
 
@@ -29,14 +29,15 @@ export function deleteTask (id) {
 export function getTask (id) {
     return Request({
         url: `todo/${id}`,
-        method: "get"
+        method: "GET"
     });
 }
 
 //更新任务
 export function updateTask (data) {
     return Request({
-        url: `todo/${data._id}`,
-        method: "put"
+        url: `todo/${data.id}`,
+        method: "PUT",
+        data
     })
 }
